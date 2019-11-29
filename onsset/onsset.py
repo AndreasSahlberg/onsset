@@ -1467,11 +1467,11 @@ class SettlementProcessor:
             wb_tier_urban_centers = int(urban_tier)
 
             if wb_tier_urban_centers == 6:
-                wb_tier_urban_centers = 'Custom'
+                wb_tier_urban_centers = 'Custom' + '{}'.format(year)
             if wb_tier_urban_clusters == 6:
-                wb_tier_urban_clusters = 'Custom'
+                wb_tier_urban_clusters = 'Custom' + '{}'.format(year)
             if wb_tier_rural == 6:
-                wb_tier_rural = 'Custom'
+                wb_tier_rural = 'Custom' + '{}'.format(year)
 
             self.df[SET_CAPITA_DEMAND] = 0
 
@@ -1582,7 +1582,7 @@ class SettlementProcessor:
                                                   num_people_per_hh=row[SET_NUM_PEOPLE_PER_HH],
                                                   grid_cell_area=row[SET_GRID_CELL_AREA],
                                                   conf_status=row[SET_CONFLICT],
-                                                  mv_line_length=row[SET_HYDRO_DIST])
+                                                  additional_mv_line_length=row[SET_HYDRO_DIST])
             else:
                 return 99
 
@@ -1847,7 +1847,7 @@ class SettlementProcessor:
                                               num_people_per_hh=row[SET_NUM_PEOPLE_PER_HH],
                                               grid_cell_area=row[SET_GRID_CELL_AREA],
                                               conf_status=row[SET_CONFLICT],
-                                              mv_line_length=row[SET_HYDRO_DIST],
+                                              additional_mv_line_length=row[SET_HYDRO_DIST],
                                               get_investment_cost=True)
 
             elif min_code == 1:
@@ -2376,16 +2376,3 @@ class SettlementProcessor:
         df_summary[year][sumtechs[31]] = sum(self.df.loc[(self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 8) &
                                                          (self.df[SET_LIMIT + "{}".format(year)] == 1)]
                                              [SET_INVESTMENT_COST + "{}".format(year)])
-
-        df_summary[year][sumtechs[32]] = min(self.df[SET_POP + "{}".format(year)])
-        df_summary[year][sumtechs[33]] = max(self.df[SET_POP + "{}".format(year)])
-        df_summary[year][sumtechs[34]] = min(self.df[SET_GRID_CELL_AREA])
-        df_summary[year][sumtechs[35]] = max(self.df[SET_GRID_CELL_AREA])
-        df_summary[year][sumtechs[36]] = min(self.df['CurrentMVLineDist'])
-        df_summary[year][sumtechs[37]] = max(self.df['CurrentMVLineDist'])
-        df_summary[year][sumtechs[38]] = min(self.df[SET_ROAD_DIST])
-        df_summary[year][sumtechs[39]] = max(self.df[SET_ROAD_DIST])
-        df_summary[year][sumtechs[40]] = min(
-            (self.df[SET_INVESTMENT_COST + "{}".format(year)]) / (self.df[SET_NEW_CONNECTIONS + "{}".format(year)]))
-        df_summary[year][sumtechs[41]] = max(
-            (self.df[SET_INVESTMENT_COST + "{}".format(year)]) / (self.df[SET_NEW_CONNECTIONS + "{}".format(year)]))

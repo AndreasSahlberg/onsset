@@ -50,10 +50,6 @@ def calibration(specs_path, csv_path, specs_path_calib, calibrated_csv_path):
     elec_modelled, rural_elec_ratio, urban_elec_ratio = \
         onsseter.elec_current_and_future(elec_actual, elec_actual_urban, elec_actual_rural, pop_tot, start_year)
 
-    # In case there are limitations in the way grid expansion is moving in a country, this can be reflected through gridspeed.
-    # In this case the parameter is set to a very high value therefore is not taken into account.
-   
-
     SpecsData.loc[0, SPE_URBAN_MODELLED] = urban_modelled
     SpecsData.loc[0, SPE_ELEC_MODELLED] = elec_modelled
     SpecsData.loc[0, 'rural_elec_ratio_modelled'] = rural_elec_ratio
@@ -96,14 +92,23 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
         rural_tier = ScenarioParameters.iloc[tierIndex]['RuralTargetTier']
         urban_tier = ScenarioParameters.iloc[tierIndex]['UrbanTargetTier']
         five_year_target = ScenarioParameters.iloc[fiveyearIndex]['5YearTarget']
-        annual_new_grid_connections_limit = ScenarioParameters.iloc[fiveyearIndex][
-                                                'GridConnectionsLimitThousands'] * 1000
         grid_price = ScenarioParameters.iloc[gridIndex]['GridGenerationCost']
         pv_capital_cost_adjust = ScenarioParameters.iloc[pvIndex]['PV_Cost_adjust']
         diesel_price = ScenarioParameters.iloc[dieselIndex]['DieselPrice']
         productive_demand = ScenarioParameters.iloc[productiveIndex]['ProductiveDemand']
         prioritization = ScenarioParameters.iloc[prioIndex]['PrioritizationAlgorithm']
-        auto_intensification = ScenarioParameters.iloc[prioIndex]['AutoIntensificationKM']
+
+        auto_intensification_2025 = ScenarioParameters.iloc[prioIndex]['AutoIntensificationKM2025']
+        auto_intensification_2030 = ScenarioParameters.iloc[prioIndex]['AutoIntensificationKM2030']
+        auto_intensification_2070 = ScenarioParameters.iloc[prioIndex]['AutoIntensificationKM2070']
+
+        annual_new_grid_connections_limit_2025 = ScenarioParameters.iloc[fiveyearIndex]['GridConnectionsLimitThousands2025'] * 1000
+        annual_new_grid_connections_limit_2030 = ScenarioParameters.iloc[fiveyearIndex]['GridConnectionsLimitThousands2030'] * 1000
+        annual_new_grid_connections_limit_2070 = ScenarioParameters.iloc[fiveyearIndex]['GridConnectionsLimitThousands2070'] * 1000
+
+        annual_grid_cap_gen_limit_2025 = SpecsData.loc[0, 'NewGridGenerationCapacityAnnualLimitMW2025'] * 1000
+        annual_grid_cap_gen_limit_2030 = SpecsData.loc[0, 'NewGridGenerationCapacityAnnualLimitMW2030'] * 1000
+        annual_grid_cap_gen_limit_2070 = SpecsData.loc[0, 'NewGridGenerationCapacityAnnualLimitMW2070'] * 1000
 
         settlements_in_csv = calibrated_csv_path
         settlements_out_csv = os.path.join(results_folder,
@@ -126,7 +131,7 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
         max_grid_extension_dist = float(SpecsData.iloc[0][SPE_MAX_GRID_EXTENSION_DIST])
         urban_elec_ratio = float(SpecsData.iloc[0]['rural_elec_ratio_modelled'])
         rural_elec_ratio = float(SpecsData.iloc[0]['urban_elec_ratio_modelled'])
-        annual_grid_cap_gen_limit = SpecsData.loc[0, 'NewGridGenerationCapacityAnnualLimitMW'] * 1000
+
         # annual_new_grid_connections_limit = SpecsData.loc[0, 'NewGridConnectionsAnnualLimitThousands']*1000
         pv_no = 1
         diesel_no = 1
@@ -135,7 +140,7 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
         Technology.set_default_values(base_year=start_year,
                                       start_year=start_year,
                                       end_year=end_year,
-                                      discount_rate=0.08)
+                                      discount_rate=0.10)
 
         grid_calc = Technology(om_of_td_lines=0.02,
                                distribution_losses=float(SpecsData.iloc[0][SPE_GRID_LOSSES]),
@@ -212,9 +217,9 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
 
 
         # RUN_PARAM: One shall define here the years of analysis (excluding start year) together with access targets per interval and timestep duration
-        yearsofanalysis = [2025, 2030]
-        eleclimits = {2025: five_year_target, 2030: 1}
-        time_steps = {2025: 7, 2030: 5}
+        yearsofanalysis = [2025, 2030, 2070]
+        eleclimits = {2025: five_year_target, 2030: 1, 2070: 1}
+        time_steps = {2025: 7, 2030: 5, 2070: 40}
 
         elements = ["1.Population", "2.New_Connections", "3.Capacity", "4.Investment"]
         techs = ["Grid", "SA_Diesel", "SA_PV", "MG_Diesel", "MG_PV", "MG_Wind", "MG_Hydro", "MG_Hybrid"]
@@ -249,12 +254,20 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
             eleclimit = eleclimits[year]
             time_step = time_steps[year]
 
-            if year - time_step == start_year:
-                grid_cap_gen_limit = time_step * annual_grid_cap_gen_limit
-                grid_connect_limit = time_step * annual_new_grid_connections_limit
-            else:
-                grid_cap_gen_limit = 9999999999
-                grid_connect_limit = 9999999999
+            #grid_cap_gen_limit = time_step * annual_grid_cap_gen_limit
+            #grid_connect_limit = time_step * annual_new_grid_connections_limit
+            if year == 2025:
+                auto_intensification = auto_intensification_2025
+                grid_connect_limit = time_step * annual_new_grid_connections_limit_2025
+                grid_cap_gen_limit = time_step * annual_grid_cap_gen_limit_2025
+            elif year == 2030:
+                auto_intensification = auto_intensification_2030
+                grid_connect_limit = time_step * annual_new_grid_connections_limit_2030
+                grid_cap_gen_limit = time_step * annual_grid_cap_gen_limit_2030
+            elif year == 2070:
+                auto_intensification = auto_intensification_2070
+                grid_connect_limit = time_step * annual_new_grid_connections_limit_2070
+                grid_cap_gen_limit = time_step * annual_grid_cap_gen_limit_2070
 
             onsseter.set_scenario_variables(year, num_people_per_hh_rural, num_people_per_hh_urban, time_step,
                                             start_year, urban_elec_ratio, rural_elec_ratio, urban_tier, rural_tier,
