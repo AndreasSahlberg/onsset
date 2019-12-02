@@ -307,7 +307,7 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
             onsseter.final_decision(year)
 
             onsseter.calculate_new_capacity(mg_hydro_calc, mg_wind_calc, mg_pv_calc, sa_pv_calc, mg_diesel_calc,
-                                            sa_diesel_calc, grid_calc, year)
+                                            sa_diesel_calc, grid_calc, year, time_step)
 
             onsseter.calc_summaries(df_summary, sumtechs, year)
 
