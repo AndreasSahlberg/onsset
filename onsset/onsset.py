@@ -485,7 +485,8 @@ class Technology:
         # So we also return the total investment cost for this number of people
         if get_investment_cost:
             discounted_investments = investments / discount_factor
-            return np.sum(discounted_investments) + self.grid_capacity_investment * peak_load / discount_factor[step]
+            return np.sum(investments) + self.grid_capacity_investment * peak_load
+            #  return np.sum(discounted_investments) + self.grid_capacity_investment * peak_load / discount_factor[step]
         elif get_investment_cost_lv:
             return total_lv_lines_length * (self.LV_line_cost * conf_grid_pen[conf_status])
         elif get_investment_cost_mv:
@@ -2309,8 +2310,7 @@ class SettlementProcessor:
                 return 0
 
         logging.info('Calculate MV investment cost')
-
-        # self.df['InvestmentCostMV' + "{}".format(year)] = self.df.apply(res_investment_cost_mv, axis=1)
+        self.df['InvestmentCostMV' + "{}".format(year)] = self.df.apply(res_investment_cost_mv, axis=1)
 
         def res_investment_cost_hv(row):
             min_code = row[SET_ELEC_FINAL_CODE + "{}".format(year)]
@@ -2330,6 +2330,11 @@ class SettlementProcessor:
                                           get_investment_cost_hv=True)
             else:
                 return 0
+
+        logging.info('Calculate HV investment cost')
+        self.df['InvestmentCostHV' + "{}".format(year)] = self.df.apply(res_investment_cost_hv, axis=1)
+
+        self.df['TransmissionInvestmentCost' + '{}'.format(year)] = self.df['InvestmentCostMV' + "{}".format(year)] + self.df['InvestmentCostHV' + "{}".format(year)]
 
     def calc_summaries(self, df_summary, sumtechs, year):
 
