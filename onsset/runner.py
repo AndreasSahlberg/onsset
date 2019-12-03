@@ -91,9 +91,7 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
         end_year_pop = ScenarioParameters.iloc[popIndex]['PopEndYear']
         rural_tier = ScenarioParameters.iloc[tierIndex]['RuralTargetTier']
         urban_tier = ScenarioParameters.iloc[tierIndex]['UrbanTargetTier']
-        five_year_target = ScenarioParameters.iloc[fiveyearIndex]['5YearTarget']
         grid_price = ScenarioParameters.iloc[gridIndex]['GridGenerationCost']
-        pv_capital_cost_adjust = ScenarioParameters.iloc[pvIndex]['PV_Cost_adjust']
         diesel_price = ScenarioParameters.iloc[dieselIndex]['DieselPrice']
         productive_demand = ScenarioParameters.iloc[productiveIndex]['ProductiveDemand']
         prioritization = ScenarioParameters.iloc[prioIndex]['PrioritizationAlgorithm']
@@ -292,8 +290,8 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
                                                                                                         auto_intensification=auto_intensification,
                                                                                                         prioritization=prioritization)
 
-            onsseter.elec_extension(grid_calc, max_grid_extension_dist, year, start_year, end_year, time_step,
-                              grid_cap_gen_limit, grid_connect_limit, auto_intensification, prioritization)
+            # onsseter.elec_extension(grid_calc, max_grid_extension_dist, year, start_year, end_year, time_step,
+            #                   grid_cap_gen_limit, grid_connect_limit, auto_intensification, prioritization)
 
             onsseter.results_columns(mg_hydro_calc, mg_wind_calc, mg_pv_calc, sa_pv_calc, mg_diesel_calc,
                                      sa_diesel_calc, grid_calc, year)
