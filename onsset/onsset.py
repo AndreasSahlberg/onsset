@@ -1679,23 +1679,6 @@ class SettlementProcessor:
             self.df[SET_LCOE_MG_DIESEL + "{}".format(year)] = 99
             self.df[SET_LCOE_SA_DIESEL + "{}".format(year)] = 99
         else:
-            logging.info('Calculate minigrid diesel LCOE')
-            self.df[SET_LCOE_MG_DIESEL + "{}".format(year)] = self.df.apply(
-                lambda row: mg_diesel_calc.get_lcoe(energy_per_cell=row[SET_ENERGY_PER_CELL + "{}".format(year)],
-                                                    start_year=year - timestep,
-                                                    end_year=end_year,
-                                                    people=row[SET_POP + "{}".format(year)],
-                                                    new_connections=row[SET_NEW_CONNECTIONS + "{}".format(year)],
-                                                    total_energy_per_cell=row[SET_TOTAL_ENERGY_PER_CELL + "{}".format(year)],
-                                                    prev_code=row[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)],
-                                                    num_people_per_hh=row[SET_NUM_PEOPLE_PER_HH],
-                                                    grid_cell_area=row[SET_GRID_CELL_AREA],
-                                                    conf_status=row[SET_CONFLICT],
-                                                    fuel_cost=row[SET_MG_DIESEL_FUEL + "{}".format(year)],
-                                                    )
-                if row[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] > 1 else 99,
-                axis=1)
-
             logging.info('Calculate standalone diesel LCOE')
             self.df[SET_LCOE_SA_DIESEL + "{}".format(year)] = self.df.apply(
                 lambda row: sa_diesel_calc.get_lcoe(energy_per_cell=row[SET_ENERGY_PER_CELL + "{}".format(year)],
@@ -1713,6 +1696,24 @@ class SettlementProcessor:
                 if (4 > row[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] > 1) or row[
                     SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] == 99
                 else 99, axis=1)
+
+        logging.info('Calculate minigrid diesel LCOE')
+        self.df[SET_LCOE_MG_DIESEL + "{}".format(year)] = self.df.apply(
+            lambda row: mg_diesel_calc.get_lcoe(energy_per_cell=row[SET_ENERGY_PER_CELL + "{}".format(year)],
+                                                start_year=year - timestep,
+                                                end_year=end_year,
+                                                people=row[SET_POP + "{}".format(year)],
+                                                new_connections=row[SET_NEW_CONNECTIONS + "{}".format(year)],
+                                                total_energy_per_cell=row[
+                                                    SET_TOTAL_ENERGY_PER_CELL + "{}".format(year)],
+                                                prev_code=row[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)],
+                                                num_people_per_hh=row[SET_NUM_PEOPLE_PER_HH],
+                                                grid_cell_area=row[SET_GRID_CELL_AREA],
+                                                conf_status=row[SET_CONFLICT],
+                                                fuel_cost=row[SET_MG_DIESEL_FUEL + "{}".format(year)],
+                                                )
+            if row[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] > 1 else 99,
+            axis=1)
 
         logging.info('Calculate standalone PV LCOE')
         self.df[SET_LCOE_SA_PV + "{}".format(year)] = self.df.apply(
