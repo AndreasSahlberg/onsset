@@ -539,8 +539,8 @@ class SettlementProcessor:
             # We apply the Szabo formula to calculate the transport cost for the diesel
             # p = (p_d + 2*p_d*consumption*time/volume)*(1/mu)*(1/LHVd)
 
-            return (diesel_price + 2 * diesel_price * diesel_truck_consumption *
-                        traveltime) / diesel_truck_volume / LHV_DIESEL / efficiency
+            return (diesel_price + (2 * diesel_price * diesel_truck_consumption *
+                        traveltime) / diesel_truck_volume) / LHV_DIESEL / efficiency
 
         self.df[SET_SA_DIESEL_FUEL + "{}".format(year)] = self.df.apply(
             lambda row: diesel_fuel_cost_calculator(diesel_price=sa_diesel_cost['diesel_price'],
