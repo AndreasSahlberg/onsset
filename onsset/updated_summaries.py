@@ -13,10 +13,10 @@ SET_TRANSMISSION_INV = 'TransmissionInvestmentCost'
 SET_GHI = 'GHI'
 SET_WINDCF = 'WindCF'
 
+import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import pandas as pd
-# from runner import *
 
 root = tk.Tk()
 root.withdraw()
@@ -24,6 +24,10 @@ root.attributes("-topmost", True)
 
 messagebox.showinfo('OnSSET', 'Open the csv file with results data')
 result_csv_path = filedialog.askopenfilename()
+
+messagebox.showinfo('OnSSET', 'Browse to SUMMARIES folder and name the scenario to save outputs')
+summary_folder = filedialog.askdirectory()
+
 df_in = pd.read_csv(result_csv_path)
 df_in['PVType2018'] = 1
 df_in['NewConnections2018'] = 0
@@ -134,4 +138,12 @@ for code in tech_codes:
                 unelectrified_sumtechs[year][sumtechs[i]] = df_unelectrified.loc[df_unelectrified[SET_ELEC_FINAL_CODE + "{}".format(year)] == code][SET_WINDCF].mean()
     i += 1
 
-print('hi')
+all_sumtechs = electrified_sumtechs + unelectrified_sumtechs
+
+unelectrified_path = os.path.join(summary_folder, 'Unelectrified_Summary.csv')
+electrified_path = os.path.join(summary_folder, 'Electrified_summary.csv')
+combined_path = os.path.join(summary_folder, 'Combined_summary.csv')
+
+unelectrified_sumtechs.to_csv(unelectrified_path, index=sumtechs)
+electrified_sumtechs.to_csv(electrified_path, index=sumtechs)
+all_sumtechs.to_csv(combined_path, index=sumtechs)
