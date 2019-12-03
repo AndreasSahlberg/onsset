@@ -9,6 +9,9 @@ SET_POP = 'Pop'
 SET_NEW_CONNECTIONS = 'NewConnections'
 SET_NEW_CAPACITY = 'NewCapacity'
 SET_INVESTMENT_COST = 'InvestmentCost'
+SET_TRANSMISSION_INV = 'TransmissionInvestmentCost'
+SET_GHI = 'GHI'
+SET_WINDCF = 'WindCF'
 
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -22,11 +25,18 @@ root.attributes("-topmost", True)
 messagebox.showinfo('OnSSET', 'Open the csv file with results data')
 result_csv_path = filedialog.askopenfilename()
 df_in = pd.read_csv(result_csv_path)
+df_in['PVType2018'] = 1
+df_in['NewConnections2018'] = 0
+df_in['NewCapacity2018'] = 0
+df_in['InvestmentCost2018'] = 0
+df_in['TransmissionInvestmentCost2018'] = 0
+df_in['TotalEnergyPerCell2018'] = df_in['ElecPopCalib'] * df_in['ResidentialDemandTierCustom2018'] * df_in[SET_ELEC_CURRENT]
 
-elements = ["1.Population", "2.New_Connections", "3.Capacity", "4.Investment", "5. Demand", "6. Transmission summaries", "7. Distribution summaries"]
+elements = ["1.Population", "2.New_Connections", "3.Capacity", "4.Investment", "5. Demand", "6. Transmission summaries", "7. Distribution summaries", "8. Capacity factor"]
 techs = ["Grid", "SA_Diesel", "MG_Diesel", "MG_PV", "MG_Wind", "MG_Hydro", "SA_PV_1", "SA_PV_2", "SA_PV_3", "SA_PV_4", "SA_PV_5"]
-years = [2025, 2030, 2070]
+years = [2018, 2025, 2030, 2070]
 tech_codes = [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+tech_costs = {1: 2248, 2: 938, 4: 721, 5: 2950, 6: 3750, 7: 3000, 8: 9620, 9: 8780, 10: 6380, 11: 4470, 12: 6950}
 
 
 for year in years:
@@ -88,6 +98,40 @@ for code in tech_codes:
     for year in years:
         electrified_sumtechs[year][sumtechs[i]] = sum(df_electrified.loc[df_electrified[SET_ELEC_FINAL_CODE + "{}".format(year)] == code][SET_TOTAL_ENERGY_PER_CELL + "{}".format(year)])/1000000
         unelectrified_sumtechs[year][sumtechs[i]] = sum(df_unelectrified.loc[df_unelectrified[SET_ELEC_FINAL_CODE + "{}".format(year)] == code][SET_TOTAL_ENERGY_PER_CELL + "{}".format(year)])/1000000
+    i += 1
+
+# Adding transmission summaries
+for code in tech_codes:
+    for year in years:
+        if code == 1:
+            unelectrified_sumtechs[year][sumtechs[i]] = sum(df_unelectrified.loc[df_unelectrified[SET_ELEC_FINAL_CODE + "{}".format(year)] == code, SET_TRANSMISSION_INV  + "{}".format(year)])/1000000
+    i += 1
+
+# Adding distribution summaries (USD/kW)
+for code in tech_codes:
+    for year in years:
+        if electrified_sumtechs[year][sumtechs[i-44]] > 0:
+            electrified_sumtechs[year][sumtechs[i]] = (electrified_sumtechs[year][sumtechs[i-33]]*1000000 -
+                                                       electrified_sumtechs[year][sumtechs[i-11]]*1000000 -
+                                                       electrified_sumtechs[year][sumtechs[i-44]]*1000 * tech_costs[code])/(electrified_sumtechs[year][sumtechs[i-44]]*1000)
+        if unelectrified_sumtechs[year][sumtechs[i-44]] > 0:
+            unelectrified_sumtechs[year][sumtechs[i]] = (unelectrified_sumtechs[year][sumtechs[i-33]]*1000000 -
+                                                       unelectrified_sumtechs[year][sumtechs[i-11]]*1000000 -
+                                                       unelectrified_sumtechs[year][sumtechs[i-44]]*1000 * tech_costs[code])/(unelectrified_sumtechs[year][sumtechs[i-44]]*1000)
+    i += 1
+
+for code in tech_codes:
+    for year in years:
+        if code == 5 or code > 7:
+            if electrified_sumtechs[year][sumtechs[i-44]] > 0:
+                electrified_sumtechs[year][sumtechs[i]] = df_electrified.loc[df_electrified[SET_ELEC_FINAL_CODE + "{}".format(year)] == code][SET_GHI].mean()/8760
+            if unelectrified_sumtechs[year][sumtechs[i - 44]] > 0:
+                unelectrified_sumtechs[year][sumtechs[i]] = df_unelectrified.loc[df_unelectrified[SET_ELEC_FINAL_CODE + "{}".format(year)] == code][SET_GHI].mean() / 8760
+        elif code == 6:
+            if electrified_sumtechs[year][sumtechs[i - 44]] > 0:
+                electrified_sumtechs[year][sumtechs[i]] = df_electrified.loc[df_electrified[SET_ELEC_FINAL_CODE + "{}".format(year)] == code][SET_WINDCF].mean()
+            if unelectrified_sumtechs[year][sumtechs[i - 44]] > 0:
+                unelectrified_sumtechs[year][sumtechs[i]] = df_unelectrified.loc[df_unelectrified[SET_ELEC_FINAL_CODE + "{}".format(year)] == code][SET_WINDCF].mean()
     i += 1
 
 print('hi')

@@ -175,16 +175,16 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
                                 base_to_peak_load_ratio=0.85,
                                 tech_life=20,
                                 om_costs=0.015,
-                                capital_cost=2950 * pv_capital_cost_adjust)
+                                capital_cost=2950)
 
         sa_pv_calc = Technology(base_to_peak_load_ratio=0.9,
                                 tech_life=15,
                                 om_costs=0.02,
-                                capital_cost={0.020: 9620 * pv_capital_cost_adjust,
-                                              0.050: 8780 * pv_capital_cost_adjust,
-                                              0.100: 6380 * pv_capital_cost_adjust,
-                                              1: 4470 * pv_capital_cost_adjust,
-                                              5: 6950 * pv_capital_cost_adjust},
+                                capital_cost={0.020: 9620,
+                                              0.050: 8780,
+                                              0.100: 6380,
+                                              1: 4470,
+                                              5: 6950},
                                 standalone=True)
 
         mg_diesel_calc = Technology(om_of_td_lines=0.02,
