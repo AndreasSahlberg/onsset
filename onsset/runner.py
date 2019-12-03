@@ -218,7 +218,7 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
 
         # RUN_PARAM: One shall define here the years of analysis (excluding start year) together with access targets per interval and timestep duration
         yearsofanalysis = [2025, 2030, 2070]
-        eleclimits = {2025: five_year_target, 2030: 1, 2070: 1}
+        eleclimits = {2025: 1, 2030: 1, 2070: 1}
         time_steps = {2025: 7, 2030: 5, 2070: 40}
 
         elements = ["1.Population", "2.New_Connections", "3.Capacity", "4.Investment"]
@@ -275,7 +275,6 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
 
             onsseter.diesel_cost_columns(sa_diesel_cost, mg_diesel_cost, year)
 
-
             onsseter.calculate_off_grid_lcoes(mg_hydro_calc, mg_wind_calc, mg_pv_calc, sa_pv_calc, mg_diesel_calc,
                                               sa_diesel_calc, year, start_year, end_year, time_step)
 
@@ -308,6 +307,8 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
 
             onsseter.calculate_new_capacity(mg_hydro_calc, mg_wind_calc, mg_pv_calc, sa_pv_calc, mg_diesel_calc,
                                             sa_diesel_calc, grid_calc, year, time_step)
+
+            onsseter.pv_system_type(year, sa_pv_calc)
 
             onsseter.calc_summaries(df_summary, sumtechs, year)
 
