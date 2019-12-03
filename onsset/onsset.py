@@ -1533,23 +1533,6 @@ class SettlementProcessor:
         self.df.loc[self.df[SET_URBAN] == 2, SET_CAPITA_DEMAND + '{}'.format(year)] = self.df[
             SET_RESIDENTIAL_TIER + str(wb_tier_urban_centers)]
 
-        # REVIEW, added Tier column
-        tier_1 = 38.7  # 38.7 refers to kWh/household/year. It is the mean value between Tier 1 and Tier 2
-        tier_2 = 219
-        tier_3 = 803
-        tier_4 = 2117
-        tier_5 = 2993
-
-        self.df[SET_TIER] = 5
-        self.df.loc[
-            self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NUM_PEOPLE_PER_HH] < tier_4, SET_TIER] = 4
-        self.df.loc[
-            self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NUM_PEOPLE_PER_HH] < tier_3, SET_TIER] = 3
-        self.df.loc[
-            self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NUM_PEOPLE_PER_HH] < tier_2, SET_TIER] = 2
-        self.df.loc[
-            self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NUM_PEOPLE_PER_HH] < tier_1, SET_TIER] = 1
-
         # Add commercial demand
         # agri = True if 'y' in input('Include agrcultural demand? <y/n> ') else False
         # if agri:
@@ -1572,11 +1555,17 @@ class SettlementProcessor:
             self.df[SET_CAPITA_DEMAND + '{}'.format(year)] += self.df[SET_EDU_DEMAND]
 
         self.df.loc[self.df[SET_URBAN] == 0, SET_ENERGY_PER_CELL + "{}".format(year)] = \
-            self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NEW_CONNECTIONS + "{}".format(year)]
+            self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NEW_CONNECTIONS + "{}".format(year)] + \
+            (self.df[SET_CAPITA_DEMAND + '{}'.format(year)] - self.df[SET_CAPITA_DEMAND + '{}'.format(year-time_step)]) * \
+            (self.df[SET_POP + "{}".format(year)] - self.df[SET_NEW_CONNECTIONS + "{}".format(year)])
         self.df.loc[self.df[SET_URBAN] == 1, SET_ENERGY_PER_CELL + "{}".format(year)] = \
-            self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NEW_CONNECTIONS + "{}".format(year)]
+            self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NEW_CONNECTIONS + "{}".format(year)] + \
+            (self.df[SET_CAPITA_DEMAND + '{}'.format(year)] - self.df[SET_CAPITA_DEMAND + '{}'.format(year-time_step)]) * \
+            (self.df[SET_POP + "{}".format(year)] - self.df[SET_NEW_CONNECTIONS + "{}".format(year)])
         self.df.loc[self.df[SET_URBAN] == 2, SET_ENERGY_PER_CELL + "{}".format(year)] = \
-            self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NEW_CONNECTIONS + "{}".format(year)]
+            self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NEW_CONNECTIONS + "{}".format(year)] + \
+            (self.df[SET_CAPITA_DEMAND + '{}'.format(year)] - self.df[SET_CAPITA_DEMAND + '{}'.format(year-time_step)]) * \
+            (self.df[SET_POP + "{}".format(year)] - self.df[SET_NEW_CONNECTIONS + "{}".format(year)])
 
         # if year - time_step == start_year:
         self.df.loc[self.df[SET_URBAN] == 0, SET_TOTAL_ENERGY_PER_CELL + "{}".format(year)] = \
