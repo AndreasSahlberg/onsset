@@ -62,10 +62,12 @@ total_rows = len(sumtechs)
 
 electrified_sumtechs = pd.DataFrame(columns=years)
 unelectrified_sumtechs = pd.DataFrame(columns=years)
+combined_sumtechs = pd.DataFrame(columns=years)
 
 for row in range(0, total_rows):
     electrified_sumtechs.loc[sumtechs[row]] = 0
     unelectrified_sumtechs.loc[sumtechs[row]] = 0
+    combined_sumtechs.loc[sumtechs[row]] = 0
 
 i = 0
 
@@ -74,6 +76,7 @@ for code in tech_codes:
     for year in years:
         electrified_sumtechs[year][sumtechs[i]] = sum(df_electrified.loc[df_electrified[SET_ELEC_FINAL_CODE + "{}".format(year)] == code][SET_POP + "{}".format(year)])/1000000
         unelectrified_sumtechs[year][sumtechs[i]] = sum(df_unelectrified.loc[df_unelectrified[SET_ELEC_FINAL_CODE + "{}".format(year)] == code][SET_POP + "{}".format(year)])/1000000
+        combined_sumtechs[year][sumtechs[i]] = sum(df_in.loc[df_in[SET_ELEC_FINAL_CODE + "{}".format(year)] == code][SET_POP + "{}".format(year)]) / 1000000
     i += 1
 
 # Adding connections summary (Million ppl)
@@ -105,10 +108,10 @@ for code in tech_codes:
     i += 1
 
 # Adding transmission summaries (Million USD)
-
 for code in tech_codes:
     for year in years:
         if code == 1:
+            electrified_sumtechs[year][sumtechs[i]] = sum(df_electrified.loc[df_electrified[SET_ELEC_FINAL_CODE + "{}".format(year)] == code, SET_TRANSMISSION_INV + "{}".format(year)]) / 1000000
             unelectrified_sumtechs[year][sumtechs[i]] = sum(df_unelectrified.loc[df_unelectrified[SET_ELEC_FINAL_CODE + "{}".format(year)] == code, SET_TRANSMISSION_INV + "{}".format(year)])/1000000
     i += 1
 
