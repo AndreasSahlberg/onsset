@@ -1104,6 +1104,10 @@ class SettlementProcessor:
             self.df.loc[
                 self.df[SET_ELEC_FUTURE_GRID + "{}".format(year - time_step)] == 1, SET_ELEC_FUTURE_GRID + "{}".format(
                     year)] = 1
+            # REVIEW
+            self.df.loc[(self.df[SET_ELEC_FINAL_CODE + "{}".format(year - time_step)] == 1) & (
+                    self.df[SET_LIMIT + "{}".format(year - time_step)] == 1), SET_ELEC_FUTURE_GRID + "{}".format(
+                year)] = 1
         else:
             self.df[SET_ELEC_FUTURE_GRID + "{}".format(year)] = 0
             self.df.loc[
@@ -1115,8 +1119,15 @@ class SettlementProcessor:
 
         if (year - time_step) == start_year:
             self.df[SET_ELEC_FUTURE_OFFGRID + "{}".format(year)] = 0
-            self.df.loc[self.df[SET_ELEC_FUTURE_OFFGRID + "{}".format(
-                year - time_step)] == 1, SET_ELEC_FUTURE_OFFGRID + "{}".format(year)] = 1
+            # self.df.loc[self.df[SET_ELEC_FUTURE_OFFGRID + "{}".format(
+            #     year - time_step)] == 1, SET_ELEC_FUTURE_OFFGRID + "{}".format(year)] = 1
+            # REVIEW
+            self.df.loc[(self.df[SET_ELEC_FUTURE_OFFGRID + "{}".format(year - time_step)] == 1) &
+                        (self.df[SET_ELEC_FUTURE_GRID + "{}".format(year - time_step)] != 1),
+                        SET_ELEC_FUTURE_OFFGRID + "{}".format(year)] = 1
+            self.df.loc[(self.df[SET_ELEC_FINAL_CODE + "{}".format(year - time_step)] != 1) & (
+                    self.df[SET_LIMIT + "{}".format(year - time_step)] == 1), SET_ELEC_FUTURE_OFFGRID + "{}".format(
+                year)] = 1
         else:
             self.df[SET_ELEC_FUTURE_OFFGRID + "{}".format(year)] = 0
             self.df.loc[(self.df[SET_ELEC_FUTURE_OFFGRID + "{}".format(year - time_step)] == 1) &
@@ -1128,7 +1139,14 @@ class SettlementProcessor:
 
         if (year - time_step) == start_year:
             self.df[SET_ELEC_FUTURE_ACTUAL + "{}".format(year)] = 0
+            # self.df.loc[self.df[SET_ELEC_FUTURE_ACTUAL + "{}".format(
+            #     year - time_step)] == 1, SET_ELEC_FUTURE_ACTUAL + "{}".format(year)] = 1
+            # REVIEW
             self.df.loc[self.df[SET_ELEC_FUTURE_ACTUAL + "{}".format(
+                year - time_step)] == 1, SET_ELEC_FUTURE_ACTUAL + "{}".format(year)] = 1
+            self.df.loc[self.df[SET_ELEC_FUTURE_GRID + "{}".format(
+                year - time_step)] == 1, SET_ELEC_FUTURE_ACTUAL + "{}".format(year)] = 1
+            self.df.loc[self.df[SET_ELEC_FUTURE_OFFGRID + "{}".format(
                 year - time_step)] == 1, SET_ELEC_FUTURE_ACTUAL + "{}".format(year)] = 1
         else:
             self.df[SET_ELEC_FUTURE_ACTUAL + "{}".format(year)] = 0
@@ -1455,8 +1473,7 @@ class SettlementProcessor:
 
     #Runs the grid extension algorithm
     def set_scenario_variables(self, year, num_people_per_hh_rural, num_people_per_hh_urban, time_step, start_year,
-                               urban_elec_ratio, rural_elec_ratio, urban_tier, rural_tier, end_year_pop,
-                               productive_demand):
+                               urban_tier, rural_tier, end_year_pop, productive_demand):
         """
         Set the basic scenario parameters that differ based on urban/rural
         So that they are in the table and can be read directly to calculate LCOEs
@@ -1605,11 +1622,12 @@ class SettlementProcessor:
                 hydro_df.loc[row[SET_HYDRO_FID], hydro_used] += additional_capacity
 
                 # if it exceeds the available capacity, it's not an option
-                if hydro_df.loc[row[SET_HYDRO_FID], hydro_used] > hydro_df.loc[row[SET_HYDRO_FID], SET_HYDRO]:
+                # if hydro_df.loc[row[SET_HYDRO_FID], hydro_used] > hydro_df.loc[row[SET_HYDRO_FID], SET_HYDRO]:
+                #     return 99
+                if 0 > 1:
                     return 99
-
                 else:
-                    if row[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] > 1:
+                    if row[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] > 0:
                         return mg_hydro_calc.get_lcoe(energy_per_cell=row[SET_ENERGY_PER_CELL + "{}".format(year)],
                                                       start_year=year - timestep,
                                                       end_year=end_year,
