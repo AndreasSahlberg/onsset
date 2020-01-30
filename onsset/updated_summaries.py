@@ -38,7 +38,7 @@ df_in['TotalEnergyPerCell2018'] = df_in['ElecPopCalib'] * df_in['ResidentialDema
 
 elements = ["1.Population", "2.New_Connections", "3.Capacity", "4.Investment", "5. Demand", "6. Transmission summaries", "7. Distribution summaries", "8. Capacity factor"]
 techs = ["Grid", "MG_Diesel", "MG_PV", "MG_Wind", "MG_Hydro", "SA_PV_1", "SA_PV_2", "SA_PV_3", "SA_PV_4", "SA_PV_5"]
-years = [2018, 2025, 2030, 2070]
+years = [2018, 2025, 2030, 2040, 2050, 2060, 2070]
 tech_codes = [1, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 tech_costs = {1: 2248, 4: 721, 5: 2950, 6: 3750, 7: 3000, 8: 9620, 9: 8780, 10: 6380, 11: 4470, 12: 6950}
 

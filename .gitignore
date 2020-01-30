@@ -133,3 +133,5 @@ dmypy.json
 # System
 .DS_Store
 
+data/New_Extraction/points_with_tiers.geojson
+onsset/pre_processing.py
