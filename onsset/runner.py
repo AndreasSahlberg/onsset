@@ -233,6 +233,7 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
 
         elements = ["1.Population", "2.New_Connections", "3.Capacity", "4.Investment"]
         techs = ["Grid", "SA_Diesel", "SA_PV", "MG_Diesel", "MG_PV", "MG_Wind", "MG_Hydro", "MG_Hybrid"]
+        time_step_number = {2025: 0, 2030: 1, 2040: 2, 2050: 3, 2060: 4, 2070: 5}
 
         sumtechs = []
 
@@ -263,6 +264,7 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
         for year in yearsofanalysis:
             eleclimit = eleclimits[year]
             time_step = time_steps[year]
+            time_step_no = time_step_number[year]
 
             end_year = year # 2070
             start_year = year - time_step
@@ -334,6 +336,9 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
                                             sa_diesel_calc, grid_calc, year, time_step)
 
             onsseter.pv_system_type(year, sa_pv_calc)
+
+            onsseter.time_step_remaining_cap(mg_hydro_calc, mg_wind_calc, mg_pv_calc, sa_pv_calc, mg_diesel_calc,
+                                    sa_diesel_calc, grid_calc, year, start_year, time_step_no)
 
             onsseter.calc_summaries(df_summary, sumtechs, year)
 

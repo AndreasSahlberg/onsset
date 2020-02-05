@@ -1936,6 +1936,15 @@ class SettlementProcessor:
         logging.info('Calculate investment cost')
         self.df[SET_INVESTMENT_COST + "{}".format(year)] = self.df.apply(res_investment_cost, axis=1)
 
+    def time_step_remaining_cap(self, mg_hydro_calc, mg_wind_calc, mg_pv_calc, sa_pv_calc, mg_diesel_calc,
+                                sa_diesel_calc, grid_calc, year, start_year, time_step_number):
+
+        self.df['MetDemand' + '{}'.format(time_step_number)] = 0
+        self.df['ExpirationYear' + '{}'.format(time_step_number)] = 0
+        self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] < 99, 'MetDemand' + '{}'.format(time_step_number)] = self.df[SET_ENERGY_PER_CELL + '{}'.format(year)]
+
+        self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 1, 'ExpirationYear' + '{}'.format(time_step_number)] = grid_calc.tech_life + start_year
+
     def apply_limitations(self, eleclimit, year, timestep, prioritization, auto_densification=0):
 
         logging.info('Determine electrification limits')
