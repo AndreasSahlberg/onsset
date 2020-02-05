@@ -107,6 +107,8 @@ SET_NTL_BIN = 'NTLBin'
 SET_MIN_TD_DIST = 'minTDdist'
 SET_SA_DIESEL_FUEL = 'SADieselFuelCost'
 SET_MG_DIESEL_FUEL = 'MGDieselFuelCost'
+SET_MET_DEMAND = 'MetDemand'
+SET_EXP_YEAR = 'ExpirationYear'
 
 # Columns in the specs file must match these exactly
 SPE_COUNTRY = 'Country'
@@ -1473,7 +1475,7 @@ class SettlementProcessor:
 
     #Runs the grid extension algorithm
     def set_scenario_variables(self, year, num_people_per_hh_rural, num_people_per_hh_urban, time_step, start_year,
-                               urban_tier, rural_tier, end_year_pop, productive_demand):
+                               urban_tier, rural_tier, end_year_pop, productive_demand, time_step_no):
         """
         Set the basic scenario parameters that differ based on urban/rural
         So that they are in the table and can be read directly to calculate LCOEs
@@ -1583,6 +1585,11 @@ class SettlementProcessor:
             self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NEW_CONNECTIONS + "{}".format(year)] + \
             (self.df[SET_CAPITA_DEMAND + '{}'.format(year)] - self.df[SET_CAPITA_DEMAND + '{}'.format(year-time_step)]) * \
             (self.df[SET_POP + "{}".format(year)] - self.df[SET_NEW_CONNECTIONS + "{}".format(year)])
+
+        for i in range(time_step_no):
+            self.df.loc[self.df[SET_EXP_YEAR + str(i)] < year, SET_EXP_YEAR + str(i)] = 9999
+            self.df.loc[self.df[SET_EXP_YEAR + str(i)] < year, SET_ENERGY_PER_CELL + "{}".format(year)] += self.df[SET_MET_DEMAND + str(i)]
+            #self.df.loc[self.df[SET_EXP_YEAR + str(i)] < year, SET_MET_DEMAND + str(i)] = 0
 
         # if year - time_step == start_year:
         self.df.loc[self.df[SET_URBAN] == 0, SET_TOTAL_ENERGY_PER_CELL + "{}".format(year)] = \
@@ -1939,29 +1946,29 @@ class SettlementProcessor:
     def time_step_remaining_cap(self, mg_hydro_calc, mg_wind_calc, mg_pv_calc, sa_pv_calc, mg_diesel_calc,
                                 sa_diesel_calc, grid_calc, year, start_year, time_step_number):
 
-        self.df['MetDemand' + '{}'.format(time_step_number)] = 0
-        self.df['ExpirationYear' + '{}'.format(time_step_number)] = 0
-        self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] < 99, 'MetDemand' + '{}'.format(time_step_number)] = self.df[SET_ENERGY_PER_CELL + '{}'.format(year)]
+        self.df[SET_MET_DEMAND + '{}'.format(time_step_number)] = 0
+        self.df[SET_EXP_YEAR + '{}'.format(time_step_number)] = 0
+        self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] < 99, SET_MET_DEMAND + '{}'.format(time_step_number)] = self.df[SET_ENERGY_PER_CELL + '{}'.format(year)]
 
-        self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 1, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+        self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 1, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
             grid_calc.tech_life + start_year
         self.df.loc[
-            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 2, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 2, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
             sa_diesel_calc.tech_life + start_year
         self.df.loc[
-            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 3, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 3, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
             sa_pv_calc.tech_life + start_year
         self.df.loc[
-            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 4, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 4, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
             mg_diesel_calc.tech_life + start_year
         self.df.loc[
-            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 5, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 5, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
             mg_pv_calc.tech_life + start_year
         self.df.loc[
-            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 6, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 6, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
             mg_wind_calc.tech_life + start_year
         self.df.loc[
-            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 7, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 7, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
             mg_hydro_calc.tech_life + start_year
 
     def apply_limitations(self, eleclimit, year, timestep, prioritization, auto_densification=0):
