@@ -1943,7 +1943,26 @@ class SettlementProcessor:
         self.df['ExpirationYear' + '{}'.format(time_step_number)] = 0
         self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] < 99, 'MetDemand' + '{}'.format(time_step_number)] = self.df[SET_ENERGY_PER_CELL + '{}'.format(year)]
 
-        self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 1, 'ExpirationYear' + '{}'.format(time_step_number)] = grid_calc.tech_life + start_year
+        self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 1, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            grid_calc.tech_life + start_year
+        self.df.loc[
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 2, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            sa_diesel_calc.tech_life + start_year
+        self.df.loc[
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 3, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            sa_pv_calc.tech_life + start_year
+        self.df.loc[
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 4, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            mg_diesel_calc.tech_life + start_year
+        self.df.loc[
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 5, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            mg_pv_calc.tech_life + start_year
+        self.df.loc[
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 6, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            mg_wind_calc.tech_life + start_year
+        self.df.loc[
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 7, 'ExpirationYear' + '{}'.format(time_step_number)] = \
+            mg_hydro_calc.tech_life + start_year
 
     def apply_limitations(self, eleclimit, year, timestep, prioritization, auto_densification=0):
 
