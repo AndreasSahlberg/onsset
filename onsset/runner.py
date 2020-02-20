@@ -259,7 +259,9 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
         for row in range(0, total_rows):
             df_summary.loc[sumtechs[row]] = "Nan"
 
-        onsseter.current_mv_line_dist()
+        onsseter.current_mv_line_dist(start_year)
+
+        onsseter.df[SET_MIN_GRID_DIST + "{}".format(start_year)] = onsseter.df[SET_MV_CONNECT_DIST]
 
         for year in yearsofanalysis:
             eleclimit = eleclimits[year]
@@ -319,6 +321,8 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
                                                                                                         auto_intensification=auto_intensification,
                                                                                                         prioritization=prioritization)
 
+            onsseter.df[SET_MIN_GRID_DIST + "{}".format(year)] = np.maximum(onsseter.df[SET_MIN_GRID_DIST + "{}".format(year)],
+                                                                            onsseter.df[SET_MIN_GRID_DIST + "{}".format(year - time_step)])
             # onsseter.elec_extension(grid_calc, max_grid_extension_dist, year, start_year, end_year, time_step,
             #                   grid_cap_gen_limit, grid_connect_limit, auto_intensification, prioritization)
 
