@@ -107,6 +107,8 @@ SET_NTL_BIN = 'NTLBin'
 SET_MIN_TD_DIST = 'minTDdist'
 SET_SA_DIESEL_FUEL = 'SADieselFuelCost'
 SET_MG_DIESEL_FUEL = 'MGDieselFuelCost'
+SET_MET_DEMAND = 'MetDemand'
+SET_EXP_YEAR = 'ExpirationYear'
 
 # Columns in the specs file must match these exactly
 SPE_COUNTRY = 'Country'
@@ -452,35 +454,37 @@ class Technology:
             total_investment_cost = td_investment_cost + capital_investment
 
         # Perform the time-value LCOE calculation
-        project_life = end_year - self.base_year + 1
+        #project_life = end_year - self.base_year + 1
+        project_life = self.tech_life
         reinvest_year = 0
         step = start_year - self.base_year
         # If the technology life is less than the project life, we will have to invest twice to buy it again
-        if self.tech_life + step < project_life:
-            reinvest_year = self.tech_life + step
+        # if self.tech_life + step < project_life:
+        #     reinvest_year = self.tech_life + step
 
         year = np.arange(project_life)
         el_gen = generation_per_year * np.ones(project_life)
-        el_gen[0:step] = 0
+        #el_gen[0:step] = 0
         discount_factor = (1 + self.discount_rate) ** year
         investments = np.zeros(project_life)
-        investments[step] = total_investment_cost
+        #investments[step] = total_investment_cost
+        investments[0] = total_investment_cost
 
         # Calculate the year of re-investment if tech_life is smaller than project life
-        if reinvest_year:
-            investments[reinvest_year] = total_investment_cost
+        # if reinvest_year:
+        #     investments[reinvest_year] = total_investment_cost
 
         # Calculate salvage value if tech_life is bigger than project life
-        salvage = np.zeros(project_life)
-        if reinvest_year > 0:
-            used_life = (project_life - step) - self.tech_life
-        else:
-            used_life = project_life - step - 1
-        salvage[-1] = total_investment_cost * (1 - used_life / self.tech_life)
+        # salvage = np.zeros(project_life)
+        # if reinvest_year > 0:
+        #     used_life = (project_life - step) - self.tech_life
+        # else:
+        #     used_life = project_life - step - 1
+        # salvage[-1] = total_investment_cost * (1 - used_life / self.tech_life)
         operation_and_maintenance = total_om_cost * np.ones(project_life)
-        operation_and_maintenance[0:step] = 0
+        #operation_and_maintenance[0:step] = 0
         fuel = el_gen * fuel_cost
-        fuel[0:step] = 0
+        #fuel[0:step] = 0
 
         # So we also return the total investment cost for this number of people
         if get_investment_cost:
@@ -504,7 +508,8 @@ class Technology:
         elif get_capacity:
             return add_capacity
         else:
-            discounted_costs = (investments + operation_and_maintenance + fuel - salvage) / discount_factor
+            discounted_costs = (investments + operation_and_maintenance + fuel) / discount_factor
+            #discounted_costs = (investments + operation_and_maintenance + fuel - salvage) / discount_factor
             discounted_generation = el_gen / discount_factor
             return np.sum(discounted_costs) / np.sum(discounted_generation)
 
@@ -1161,10 +1166,10 @@ class SettlementProcessor:
         self.df.loc[
             self.df[SET_ELEC_FUTURE_GRID + "{}".format(year)] == 1, SET_LCOE_GRID + "{}".format(year)] = grid_price
 
-    def current_mv_line_dist(self):
+    def current_mv_line_dist(self, year):
         logging.info('Determine current MV line length')
         self.df[SET_MV_CONNECT_DIST] = 0
-        self.df.loc[self.df[SET_ELEC_CURRENT] == 1, SET_MV_CONNECT_DIST] = self.df[SET_HV_DIST_CURRENT]
+        self.df.loc[self.df[SET_ELEC_FINAL_CODE + '{}'.format(year)] == 1, SET_MV_CONNECT_DIST] = self.df[SET_HV_DIST_CURRENT]
         self.df[SET_MIN_TD_DIST] = self.df[[SET_MV_DIST_PLANNED, SET_HV_DIST_PLANNED]].min(axis=1)
 
     def elec_extension(self, grid_calc, max_dist, year, start_year, end_year, timestep, grid_cap_gen_limit,
@@ -1473,7 +1478,7 @@ class SettlementProcessor:
 
     #Runs the grid extension algorithm
     def set_scenario_variables(self, year, num_people_per_hh_rural, num_people_per_hh_urban, time_step, start_year,
-                               urban_tier, rural_tier, end_year_pop, productive_demand):
+                               urban_tier, rural_tier, end_year_pop, productive_demand, time_step_no):
         """
         Set the basic scenario parameters that differ based on urban/rural
         So that they are in the table and can be read directly to calculate LCOEs
@@ -1488,7 +1493,7 @@ class SettlementProcessor:
         # Calculate new connections for grid related purposes
         # REVIEW - This was changed based on your "newly created" column SET_ELEC_POP. Please review and check whether this creates any problem at your distribution_network function using people/new connections and energy_per_settlement/total_energy_per_settlement
 
-        if year - time_step == start_year:
+        if year - time_step == 2018:
             # Assign new connections to those that are already electrified to a certain percent
             self.df.loc[(self.df[SET_ELEC_FUTURE_ACTUAL + "{}".format(
                 year - time_step)] == 1), SET_NEW_CONNECTIONS + "{}".format(year)] = \
@@ -1583,6 +1588,12 @@ class SettlementProcessor:
             self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NEW_CONNECTIONS + "{}".format(year)] + \
             (self.df[SET_CAPITA_DEMAND + '{}'.format(year)] - self.df[SET_CAPITA_DEMAND + '{}'.format(year-time_step)]) * \
             (self.df[SET_POP + "{}".format(year)] - self.df[SET_NEW_CONNECTIONS + "{}".format(year)])
+
+        for i in range(time_step_no):
+
+            self.df.loc[self.df[SET_EXP_YEAR + str(i)] < year, SET_ENERGY_PER_CELL + "{}".format(year)] += self.df[SET_MET_DEMAND + str(i)]
+            self.df.loc[self.df[SET_EXP_YEAR + str(i)] < year, SET_EXP_YEAR + str(i)] = 9999
+            #self.df.loc[self.df[SET_EXP_YEAR + str(i)] < year, SET_MET_DEMAND + str(i)] = 0
 
         # if year - time_step == start_year:
         self.df.loc[self.df[SET_URBAN] == 0, SET_TOTAL_ENERGY_PER_CELL + "{}".format(year)] = \
@@ -1935,6 +1946,34 @@ class SettlementProcessor:
 
         logging.info('Calculate investment cost')
         self.df[SET_INVESTMENT_COST + "{}".format(year)] = self.df.apply(res_investment_cost, axis=1)
+
+    def time_step_remaining_cap(self, mg_hydro_calc, mg_wind_calc, mg_pv_calc, sa_pv_calc, mg_diesel_calc,
+                                sa_diesel_calc, grid_calc, year, start_year, time_step_number):
+
+        self.df[SET_MET_DEMAND + '{}'.format(time_step_number)] = 0
+        self.df[SET_EXP_YEAR + '{}'.format(time_step_number)] = 0
+        self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] < 99, SET_MET_DEMAND + '{}'.format(time_step_number)] = self.df[SET_ENERGY_PER_CELL + '{}'.format(year)]
+
+        self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 1, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
+            grid_calc.tech_life + start_year
+        self.df.loc[
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 2, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
+            sa_diesel_calc.tech_life + start_year
+        self.df.loc[
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 3, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
+            sa_pv_calc.tech_life + start_year
+        self.df.loc[
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 4, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
+            mg_diesel_calc.tech_life + start_year
+        self.df.loc[
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 5, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
+            mg_pv_calc.tech_life + start_year
+        self.df.loc[
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 6, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
+            mg_wind_calc.tech_life + start_year
+        self.df.loc[
+            self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 7, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
+            mg_hydro_calc.tech_life + start_year
 
     def apply_limitations(self, eleclimit, year, timestep, prioritization, auto_densification=0):
 

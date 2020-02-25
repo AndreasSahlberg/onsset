@@ -233,6 +233,7 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
 
         elements = ["1.Population", "2.New_Connections", "3.Capacity", "4.Investment"]
         techs = ["Grid", "SA_Diesel", "SA_PV", "MG_Diesel", "MG_PV", "MG_Wind", "MG_Hydro", "MG_Hybrid"]
+        time_step_number = {2025: 1, 2030: 2, 2040: 3, 2050: 4, 2060: 5, 2070: 6}
 
         sumtechs = []
 
@@ -258,11 +259,14 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
         for row in range(0, total_rows):
             df_summary.loc[sumtechs[row]] = "Nan"
 
-        onsseter.current_mv_line_dist()
+        onsseter.current_mv_line_dist(start_year)
+
+        onsseter.df[SET_MIN_GRID_DIST + "{}".format(start_year)] = onsseter.df[SET_MV_CONNECT_DIST]
 
         for year in yearsofanalysis:
             eleclimit = eleclimits[year]
             time_step = time_steps[year]
+            time_step_no = time_step_number[year]
 
             end_year = year # 2070
             start_year = year - time_step
@@ -296,7 +300,7 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
 
             onsseter.set_scenario_variables(year, num_people_per_hh_rural, num_people_per_hh_urban, time_step,
                                             start_year, urban_tier, rural_tier,
-                                            end_year_pop, productive_demand)
+                                            end_year_pop, productive_demand, time_step_no)
 
             onsseter.diesel_cost_columns(sa_diesel_cost, mg_diesel_cost, year)
 
@@ -317,6 +321,8 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
                                                                                                         auto_intensification=auto_intensification,
                                                                                                         prioritization=prioritization)
 
+            onsseter.df[SET_MIN_GRID_DIST + "{}".format(year)] = np.maximum(onsseter.df[SET_MIN_GRID_DIST + "{}".format(year)],
+                                                                            onsseter.df[SET_MIN_GRID_DIST + "{}".format(year - time_step)])
             # onsseter.elec_extension(grid_calc, max_grid_extension_dist, year, start_year, end_year, time_step,
             #                   grid_cap_gen_limit, grid_connect_limit, auto_intensification, prioritization)
 
@@ -334,6 +340,9 @@ def scenario(specs_path, calibrated_csv_path, results_folder, summary_folder):
                                             sa_diesel_calc, grid_calc, year, time_step)
 
             onsseter.pv_system_type(year, sa_pv_calc)
+
+            onsseter.time_step_remaining_cap(mg_hydro_calc, mg_wind_calc, mg_pv_calc, sa_pv_calc, mg_diesel_calc,
+                                    sa_diesel_calc, grid_calc, year, start_year, time_step_no)
 
             onsseter.calc_summaries(df_summary, sumtechs, year)
 
