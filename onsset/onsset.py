@@ -1484,10 +1484,10 @@ class SettlementProcessor:
         So that they are in the table and can be read directly to calculate LCOEs
         """
 
-        if end_year_pop == 0:
-            self.df[SET_POP + "{}".format(year)] = self.df[SET_POP + "{}".format(year) + 'Low']
-        else:
-            self.df[SET_POP + "{}".format(year)] = self.df[SET_POP + "{}".format(year) + 'High']
+        # if end_year_pop == 0:
+        #     self.df[SET_POP + "{}".format(year)] = self.df[SET_POP + "{}".format(year) + 'Low']
+        # else:
+        #     self.df[SET_POP + "{}".format(year)] = self.df[SET_POP + "{}".format(year) + 'High']
 
         logging.info('Calculate new connections')
         # Calculate new connections for grid related purposes
@@ -1543,9 +1543,9 @@ class SettlementProcessor:
 
         # RUN_PARAM: This shall be changed if different urban/rural categorization is decided
         # Create new columns assigning number of people per household as per Urban/Rural type
-        self.df.loc[self.df[SET_URBAN] == 0, SET_NUM_PEOPLE_PER_HH] = num_people_per_hh_rural
-        self.df.loc[self.df[SET_URBAN] == 1, SET_NUM_PEOPLE_PER_HH] = num_people_per_hh_rural
-        self.df.loc[self.df[SET_URBAN] == 2, SET_NUM_PEOPLE_PER_HH] = num_people_per_hh_urban
+        self.df.loc[self.df[SET_URBAN] == 0, SET_NUM_PEOPLE_PER_HH] = self.df[SET_NUM_PEOPLE_PER_HH + '{}'.format(year)]
+        self.df.loc[self.df[SET_URBAN] == 1, SET_NUM_PEOPLE_PER_HH] = self.df[SET_NUM_PEOPLE_PER_HH + '{}'.format(year)]
+        self.df.loc[self.df[SET_URBAN] == 2, SET_NUM_PEOPLE_PER_HH] = self.df[SET_NUM_PEOPLE_PER_HH + '{}'.format(year)]
 
         # Define per capita residential demand
         self.df.loc[self.df[SET_URBAN] == 0, SET_CAPITA_DEMAND + '{}'.format(year)] = self.df[
