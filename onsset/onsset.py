@@ -1576,6 +1576,11 @@ class SettlementProcessor:
         if int(productive_demand) == 1:
             self.df[SET_CAPITA_DEMAND + '{}'.format(year)] += self.df[SET_EDU_DEMAND]
 
+        existing_increase = (self.df[SET_CAPITA_DEMAND + '{}'.format(year)] - self.df[SET_CAPITA_DEMAND + '{}'.format(year-time_step)]) * \
+            (self.df[SET_POP + "{}".format(year)] - self.df[SET_NEW_CONNECTIONS + "{}".format(year)])
+
+        existing_increase.loc[existing_increase < 0] = 0
+
         self.df.loc[self.df[SET_URBAN] == 0, SET_ENERGY_PER_CELL + "{}".format(year)] = \
             self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NEW_CONNECTIONS + "{}".format(year)] + \
             (self.df[SET_CAPITA_DEMAND + '{}'.format(year)] - self.df[SET_CAPITA_DEMAND + '{}'.format(year-time_step)]) * \
@@ -1588,6 +1593,9 @@ class SettlementProcessor:
             self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NEW_CONNECTIONS + "{}".format(year)] + \
             (self.df[SET_CAPITA_DEMAND + '{}'.format(year)] - self.df[SET_CAPITA_DEMAND + '{}'.format(year-time_step)]) * \
             (self.df[SET_POP + "{}".format(year)] - self.df[SET_NEW_CONNECTIONS + "{}".format(year)])
+
+        self.df[SET_ENERGY_PER_CELL + "{}".format(year)] = self.df[SET_CAPITA_DEMAND + '{}'.format(year)] * self.df[SET_NEW_CONNECTIONS + "{}".format(year)] + existing_increase
+        # self.df.loc[SET_ENERGY_PER_CELL + "{}".format(year) < 0] = 0
 
         for i in range(time_step_no):
 
@@ -1661,6 +1669,13 @@ class SettlementProcessor:
         num_hydro_limited = hydro_df.loc[hydro_df[hydro_used] > hydro_df[SET_HYDRO]][SET_HYDRO].count()
         logging.info('{} potential hydropower sites were utilised to maximum capacity'.format(num_hydro_limited))
 
+        self.df.loc[(self.df[SET_POP + "{}".format(year)] < 50) & (
+                self.df[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] != 7), SET_LCOE_MG_HYDRO + "{}".format(
+            year)] = 99
+
+        self.df.loc[self.df[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] == 1, SET_LCOE_MG_HYDRO + "{}".format(
+            year)] = 99
+
         logging.info('Calculate minigrid PV LCOE')
         self.df[SET_LCOE_MG_PV + "{}".format(year)] = self.df.apply(
             lambda row: mg_pv_calc.get_lcoe(energy_per_cell=row[SET_ENERGY_PER_CELL + "{}".format(year)],
@@ -1677,6 +1692,10 @@ class SettlementProcessor:
             if row[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] > 1
             else 99, axis=1)
 
+        self.df.loc[(self.df[SET_POP + "{}".format(year)] < 50) & (
+                self.df[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] != 5), SET_LCOE_MG_PV + "{}".format(
+            year)] = 99
+
         logging.info('Calculate minigrid wind LCOE')
         self.df[SET_LCOE_MG_WIND + "{}".format(year)] = self.df.apply(
             lambda row: mg_wind_calc.get_lcoe(energy_per_cell=row[SET_ENERGY_PER_CELL + "{}".format(year)],
@@ -1692,6 +1711,10 @@ class SettlementProcessor:
                                               capacity_factor=row[SET_WINDCF])
             if row[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] > 1 else 99,
             axis=1)
+
+        self.df.loc[(self.df[SET_POP + "{}".format(year)] < 50) & (
+                self.df[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] != 6), SET_LCOE_MG_WIND + "{}".format(
+            year)] = 99
 
         if diesel_techs == 0:
             self.df[SET_LCOE_MG_DIESEL + "{}".format(year)] = 99
@@ -1732,6 +1755,10 @@ class SettlementProcessor:
                                                 )
             if row[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] > 1 else 99,
             axis=1)
+
+        self.df.loc[(self.df[SET_POP + "{}".format(year)] < 50) & (
+                self.df[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] != 4), SET_LCOE_MG_DIESEL + "{}".format(
+            year)] = 99
 
         logging.info('Calculate standalone PV LCOE')
         self.df[SET_LCOE_SA_PV + "{}".format(year)] = self.df.apply(
@@ -2057,7 +2084,34 @@ class SettlementProcessor:
                                    self.df[SET_LIMIT + "{}".format(year)] == 1, SET_POP + "{}".format(year)].sum() / \
                                self.df[SET_POP + "{}".format(year)].sum()
 
-            elif choice == 2:  # Prioritize grid densification/intensification (1 or 2 km).
+            elif choice == 2:
+                # Calculate the total population targeted to be electrified
+                elec_target_pop = eleclimit * self.df[SET_POP + "{}".format(year)].sum()
+
+                # Prioritize already electrified settlements, then intensification, then shortest travel time
+
+                self.df['Intensification'] = np.where(self.df[SET_MV_DIST_PLANNED] < auto_densification, 1, 0)
+
+                self.df.sort_values(by=[SET_ELEC_FINAL_CODE + "{}".format(year - timestep),
+                                        'Intensification',
+                                        SET_TRAVEL_HOURS], inplace=True)
+
+                cumulative_pop = self.df[SET_POP + "{}".format(year)].cumsum()
+
+                self.df[SET_LIMIT + "{}".format(year)] = np.where(cumulative_pop < elec_target_pop, 1, 0)
+
+                del self.df['Intensification']
+
+                self.df.sort_index(inplace=True)
+
+                # Ensure already electrified settlements remain electrified
+                self.df.loc[(self.df[SET_ELEC_FINAL_CODE + "{}".format(year - timestep)] < 99),
+                            SET_LIMIT + "{}".format(year)] = 1
+
+                elecrate = self.df.loc[self.df[SET_LIMIT + "{}".format(year)] == 1,
+                                       SET_POP + "{}".format(year)].sum() / self.df[SET_POP + "{}".format(year)].sum()
+
+            elif choice == 10:  # Prioritize grid densification/intensification (1 or 2 km). TODO this is original prio = 2
                 # Then lowest investment per capita
                 self.df[SET_LIMIT + "{}".format(year)] = 0
                 elecrate = 0
