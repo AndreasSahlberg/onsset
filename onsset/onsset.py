@@ -334,7 +334,7 @@ class Technology:
             fuel_cost = self.grid_price
 
         # Perform the time-value LCOE calculation
-        project_life = end_year - self.base_year + 1
+        project_life = self.tech_life  # end_year - self.base_year + 1
         reinvest_year = 0
         step = start_year - self.base_year
         # If the technology life is less than the project life, we will have to invest twice to buy it again
@@ -343,18 +343,19 @@ class Technology:
 
         year = np.arange(project_life)
         el_gen = np.outer(np.asarray(generation_per_year), np.ones(project_life))
-        for s in range(step):
-            el_gen[:, s] = 0
+        # for s in range(project_life):
+        #     el_gen[:, s] = 0
+        el_gen[:, 0] = 0
         discount_factor = (1 + self.discount_rate) ** year
         investments = np.zeros(project_life)
-        investments[step] = 1
+        investments[0] = 1
         # Calculate the year of re-investment if tech_life is smaller than project life
         if reinvest_year:
             investments[reinvest_year] = 1
         investments = np.outer(total_investment_cost, investments)
-
+        #
         grid_capacity_investments = np.zeros(project_life)
-        grid_capacity_investments[step] = 1
+        grid_capacity_investments[0] = 1
         # Calculate the year of re-investment if tech_life is smaller than project life
         if reinvest_year:
             grid_capacity_investments[reinvest_year] = 1
@@ -362,25 +363,26 @@ class Technology:
 
         # Calculate salvage value if tech_life is bigger than project life
         salvage = np.zeros(project_life)
-        if reinvest_year > 0:
-            used_life = (project_life - step) - self.tech_life
-        else:
-            used_life = project_life - step - 1
-        salvage[-1] = 1
-        salvage = np.outer(total_investment_cost * (1 - used_life / self.tech_life), salvage)
+        # if reinvest_year > 0:
+        #     used_life = (project_life - step) - self.tech_life
+        # else:
+        #     used_life = project_life - step - 1
+        # salvage[-1] = 1
+        salvage = np.outer(total_investment_cost, salvage)
 
         operation_and_maintenance = np.ones(project_life)
-        for s in range(step):
-            operation_and_maintenance[s] = 0
+        # for s in range(project_life):
+        #     operation_and_maintenance[s] = 0
+        operation_and_maintenance[0] = 0
         operation_and_maintenance = np.outer(total_om_cost, operation_and_maintenance)
         fuel = np.outer(np.asarray(generation_per_year), np.zeros(project_life))
         for p in range(project_life):
             fuel[:, p] = el_gen[:, p] * fuel_cost
 
-        discounted_investments = investments #  / discount_factor
-        dicounted_grid_capacity_investments = grid_capacity_investments # / discount_factor
-        investment_cost = np.sum(discounted_investments, axis=1) + np.sum(dicounted_grid_capacity_investments, axis=1)
-        discounted_costs = (investments + operation_and_maintenance + fuel - salvage) / discount_factor
+        discounted_investments = investments / discount_factor
+        dicounted_grid_capacity_investments = grid_capacity_investments / discount_factor
+        investment_cost = np.sum(investments, axis=1) + np.sum(grid_capacity_investments, axis=1)
+        discounted_costs = (investments + operation_and_maintenance + fuel- salvage) / discount_factor
         discounted_generation = el_gen / discount_factor
         lcoe = np.sum(discounted_costs, axis=1) / np.sum(discounted_generation, axis=1)
         lcoe = pd.DataFrame(lcoe[:, np.newaxis])
