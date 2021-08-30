@@ -125,8 +125,6 @@ dmypy.json
 *.xlsx
 *.csv
 
-
-
 # VSCode
 .vscode
 
@@ -137,6 +135,3 @@ data/New_Extraction/points_with_tiers.geojson
 onsset/pre_processing.py
 *.qgz
 *.JPG
-*.ipynb
-Scenario_run-Policies.ipynb
-*.ipynb
