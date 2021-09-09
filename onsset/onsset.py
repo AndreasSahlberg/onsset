@@ -1436,7 +1436,7 @@ class SettlementProcessor:
                                                     year=year, grid_calc=grid_calc, grid_investment=grid_investment,
                                                     new_investment=new_investment)
 
-        if (prio == 5) or (prio == 6):  # TODO how to deal with grid cap?
+        if (prio == 5) or (prio == 6) or (prio == 2):  # TODO how to deal with grid cap?
             mv_dist_adjusted = np.nan_to_num(grid_penalty_ratio * mv_planned)
 
             intensification_lcoe, intensification_investment = \
@@ -2077,9 +2077,14 @@ class SettlementProcessor:
 
         elif (choice == 5) or (choice == 6):
             # Prioritize already electrified settlements first, then lowest investment per capita
+            self.df['RevPop'] = self.df[SET_POP + "{}".format(year)] * -1
+
             self.df.sort_values(by=[SET_ELEC_FINAL_CODE + "{}".format(year - time_step),
-                                    SET_TRAVEL_HOURS], inplace=True)
-            # SET_MIN_OVERALL_LCOE + "{}".format(year)], inplace=True)
+                                    SET_INVEST_PER_CAPITA + "{}".format(year)], inplace=True)
+            # SET_INVEST_PER_CAPITA + "{}".format(year)
+            # ('RevPop')
+            # SET_TRAVEL_HOURS
+            # SET_MIN_OVERALL_LCOE + "{}".format(year)
 
             cumulative_pop = self.df[SET_POP + "{}".format(year)].cumsum()
 
@@ -2090,6 +2095,8 @@ class SettlementProcessor:
             # Ensure already electrified settlements remain electrified
             self.df.loc[(self.df[SET_ELEC_FINAL_CODE + "{}".format(year - time_step)] < 99),
                         SET_LIMIT + "{}".format(year)] = 1
+
+            del self.df['RevPop']
 
         elecrate = self.df.loc[self.df[SET_LIMIT + "{}".format(year)] == 1,
                                SET_POP + "{}".format(year)].sum() / self.df[SET_POP + "{}".format(year)].sum()
