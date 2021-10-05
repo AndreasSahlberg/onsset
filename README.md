@@ -38,16 +38,18 @@ pip install onsset
 Download or clone the repository and install the package in `develop` (editable) mode:
 
 ```
-git clone https://github.com/onsset/onsset.git
-cd gep-onsset
+git clone https://github.com/AndreasSahlberg/onsset-Ethiopia.git
+cd onsset-Ethiopia
 python setup.py develop
 ```
 
-The use of GEP generator requires also installation of
-- IPython
-- jupyter
-- matplotlib
-- seaborn
+**How to use the tool**
+
+There are two parts to the OnSSET model developed for Ethiopia under this project. 
+The user should first use the *Demand_generator.ipynb* to specify the share of the population in each demand Tier in each time-step. The *input_data_ethiopia.csv* file containing extracted GIS data can be used as input. 
+In the second step, the output file from the *Demand_generator.ipynb"* is used in the *Scenario_run.ipynb"* to explore least-cost electrification pathways.
+
+For unfamiliar users, a training course on the OnSSET tool and related GIS processes is available at: https://www.open.edu/openlearncreate/course/view.php?id=6816
 
 ## Contact
-For more information regarding the tool, its functionality and implementation please visit https://www.onsset.org or contact the development team at seap@desa.kth.se.
+For more information regarding the tool, its functionality and implementation please visit https://www.onsset.org.
