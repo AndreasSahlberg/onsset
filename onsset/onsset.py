@@ -1549,7 +1549,7 @@ class SettlementProcessor:
         peak_load.loc[grid_lcoe >= min_code_lcoes] = 0
         peak_load_cum_sum = np.cumsum(peak_load)
         grid_lcoe.loc[peak_load_cum_sum > grid_capacity_limit] = 99
-        new_grid_connections = self.df[SET_NEW_CONNECTIONS + "{}".format(year)] / self.df[SET_NUM_PEOPLE_PER_HH]
+        new_grid_connections = self.df[SET_POP + "{}".format(year)] / self.df[SET_NUM_PEOPLE_PER_HH]
         new_grid_connections.loc[grid_lcoe >= min_code_lcoes] = 0
         new_grid_connections_cum_sum = np.cumsum(new_grid_connections)
         grid_lcoe.loc[new_grid_connections_cum_sum > grid_connect_limit] = 99
