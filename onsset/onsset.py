@@ -2080,7 +2080,7 @@ class SettlementProcessor:
             self.df['RevPop'] = self.df[SET_POP + "{}".format(year)] * -1
 
             self.df.sort_values(by=[SET_ELEC_FINAL_CODE + "{}".format(year - time_step),
-                                    SET_INVEST_PER_CAPITA + "{}".format(year)], inplace=True)
+                                    SET_TRAVEL_HOURS], inplace=True)
             # SET_INVEST_PER_CAPITA + "{}".format(year)
             # ('RevPop')
             # SET_TRAVEL_HOURS
