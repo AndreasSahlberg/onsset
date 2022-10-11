@@ -1,11 +1,12 @@
-# This file runs either the calibration or scenario modules in the runner file,
-# and asks the user to browse to the necessary input files
+"""Provides a GUI for the user to choose input files
+This file runs either the calibration or scenario modules in the runner file,
+and asks the user to browse to the necessary input files
+"""
 
-import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import pandas as pd
-from runner import *
+from runner import calibration, scenario
 
 root = tk.Tk()
 root.withdraw()

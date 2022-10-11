@@ -1,19 +1,23 @@
-onsset
-=================================
+onsset : Open Source Spatial Electrification Tool
+=================================================
 
-[![PyPI version](https://badge.fury.io/py/gridfinder.svg)](https://test.pypi.org/project/gep-onsset/)
+[![PyPI version](https://badge.fury.io/py/onsset.svg)](https://badge.fury.io/py/onsset)
 [![Build Status](https://travis-ci.com/OnSSET/onsset.svg?branch=master)](https://travis-ci.com/OnSSET/onsset)
+[![Coverage Status](https://coveralls.io/repos/github/OnSSET/onsset/badge.svg?branch=master)](https://coveralls.io/github/OnSSET/onsset?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/onsset/badge/?version=latest)](https://onsset.readthedocs.io/en/latest/?badge=latest)
-
-Documentation: https://onsset.readthedocs.io/en/latest/index.html#
 
 # Scope
 
-This repository contains the source code of the Open Source Spatial Electrification Tool ([OnSSET](http://www.onsset.org/)). The repository also includes sample test files available in ```.\test_data``` and sample output files available in ```.\sample_output```.
+This repository contains the source code of the Open Source Spatial Electrification Tool
+([OnSSET](http://www.onsset.org/)).
+
+
+The repository also includes sample test files available in ```.\test_data```
+and sample output files available in ```.\sample_output```.
 
 ## Installation
 
-**Requirements**
+### Requirements
 
 OnSSET requires Python > 3.5 with the following packages installed:
 - et-xmlfile
@@ -25,31 +29,31 @@ OnSSET requires Python > 3.5 with the following packages installed:
 - pytz
 - six
 - xlrd
+- notebook
+- seaborn
+- matplotlib
+- scipy
 
+### Install with pip
 
-**Install with pip**
+Install onsset from the Python Packaging Index (PyPI):
 
 ```
 pip install onsset
 ```
 
-**Install from GitHub**
+### Install from GitHub
 
-Download or clone the repository and install the package in `develop` (editable) mode:
+Download or clone the repository and install the package in `develop`
+(editable) mode:
 
 ```
-git clone https://github.com/AndreasSahlberg/onsset-Ethiopia.git
-cd onsset-Ethiopia
+git clone https://github.com/onsset/onsset.git
+cd onsset
 python setup.py develop
 ```
 
-**How to use the tool**
-
-There are two parts to the OnSSET model developed for Ethiopia under this project. 
-The user should first use the *Demand_generator.ipynb* to specify the share of the population in each demand Tier in each time-step. The *input_data_ethiopia.csv* file containing extracted GIS data can be used as input. 
-In the second step, the output file from the *Demand_generator.ipynb"* is used in the *Scenario_run.ipynb"* to explore least-cost electrification pathways.
-
-For unfamiliar users, a training course on the OnSSET tool and related GIS processes is available at: https://www.open.edu/openlearncreate/course/view.php?id=6816
-
 ## Contact
-For more information regarding the tool, its functionality and implementation please visit https://www.onsset.org.
+For more information regarding the tool, its functionality and implementation
+please visit https://www.onsset.org or contact the development team
+at seap@desa.kth.se.
