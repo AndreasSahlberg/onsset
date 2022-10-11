@@ -1,4 +1,5 @@
 """Provides a GUI for the user to choose input files
+
 This file runs either the calibration or scenario modules in the runner file,
 and asks the user to browse to the necessary input files
 """
@@ -42,4 +43,3 @@ elif choice == 2:
     summary_folder = filedialog.askdirectory()
 
     scenario(specs_path, calibrated_csv_path, results_folder, summary_folder)
-

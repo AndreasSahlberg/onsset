@@ -11,7 +11,7 @@ The 2030 Agenda for Sustainable Development has set the goal of universal access
 
 What is OnSSET?
 ***************
-Over the past few year, the division of Energy Systems Analysis at KTH has been embracing the advancements in the geospatial field, by developing together with partners  an open source, geospatial electrification toolkit – the Open Source Spatial Electrification Tool (OnSSET). OnSSET is a GIS  based tool developed to identify the least-cost electrification option(s) between seven alternative configurations:
+Over the past few years, the division of Energy Systems at KTH (formerly division of Energy Systems Analysis) has been embracing the advancements in the geospatial field, by developing together with partners  an open source, geospatial electrification toolkit – the Open Source Spatial Electrification Tool (OnSSET). OnSSET is a GIS  based tool developed to identify the least-cost electrification option(s) between seven alternative configurations:
 
 * Grid connection/extension
 * Mini grid systems (Solar PV, Wind Turbines, Diesel gensets, Small scale hydropower)
@@ -31,4 +31,4 @@ OnSSET output, can be used to support policy development for electrification by 
 * What is the importance/impact of diesel price in the generation mix for electrification? 
 * How does fuel cost for diesel compares with high upfront cost of renewables in terms of subsidy schemes (continuous vs one-time subsidy)?
 
-To the current state, OnSSET has supported electrification efforts in many countries around the globe including Afghanistan, Nigeria, Ethiopia, Kenya, India, Tanzania, Madagascar and Benin as part of joint collaboration with the World Bank, the United Nations and SNV. These organizations, have warmly embraced the tool in their fight against energy poverty. In addition, OnSSET has featured in several peer reviewd publications including the World Energy Outlook in 2014, 2015 and 2017. 
+To the current state, OnSSET has supported electrification efforts in many countries around the globe including Afghanistan, Nigeria, Ethiopia, Kenya, India, Tanzania, Madagascar and Benin as part of joint collaboration with the World Bank, the United Nations and SNV. These organizations, have warmly embraced the tool in their fight against energy poverty. In addition, OnSSET has featured in several peer reviewd publications including the World Energy Outlook in 2014, 2015, 2017 and 2019. 
