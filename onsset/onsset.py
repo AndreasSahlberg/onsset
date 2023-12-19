@@ -2029,7 +2029,7 @@ class SettlementProcessor:
             self.df[SET_ELEC_FINAL_CODE + "{}".format(year)] == 7, SET_EXP_YEAR + '{}'.format(time_step_number)] = \
             mg_hydro_calc.tech_life + start_year
 
-    def apply_limitations(self, eleclimit, year, time_step, prioritization, auto_densification=0):
+    def apply_limitations(self, eleclimit, year, time_step, prioritization, prio_column, auto_densification=0):
 
         # logging.info('Determine electrification limits')
         choice = int(prioritization)
@@ -2078,13 +2078,18 @@ class SettlementProcessor:
         elif (choice == 5) or (choice == 6):
             # Prioritize already electrified settlements first, then lowest investment per capita
             self.df['RevPop'] = self.df[SET_POP + "{}".format(year)] * -1
-
-            self.df.sort_values(by=[SET_ELEC_FINAL_CODE + "{}".format(year - time_step),
+            if prio_column == 1:  # Travel hours
+                self.df.sort_values(by=[SET_ELEC_FINAL_CODE + "{}".format(year - time_step),
                                     SET_TRAVEL_HOURS], inplace=True)
-            # SET_INVEST_PER_CAPITA + "{}".format(year)
-            # ('RevPop')
-            # SET_TRAVEL_HOURS
-            # SET_MIN_OVERALL_LCOE + "{}".format(year)
+            elif prio_column == 2:  # Low-hanging fruit
+                self.df.sort_values(by=[SET_ELEC_FINAL_CODE + "{}".format(year - time_step),
+                                        SET_INVEST_PER_CAPITA + "{}".format(year)], inplace=True)
+            elif prio_column == 3:  # LCOE
+                self.df.sort_values(by=[SET_ELEC_FINAL_CODE + "{}".format(year - time_step),
+                                        SET_MIN_OVERALL_LCOE + "{}".format(year)], inplace=True)
+            elif prio_column == 4:  # Largest pop
+                self.df.sort_values(by=[SET_ELEC_FINAL_CODE + "{}".format(year - time_step),
+                                        'RevPop'], inplace=True)
 
             cumulative_pop = self.df[SET_POP + "{}".format(year)].cumsum()
 
